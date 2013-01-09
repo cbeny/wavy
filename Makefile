@@ -1,4 +1,4 @@
-LIBS =  -lglut -lm -lpthread -lfftw3 -lfftw3_threads
+LIBS =  -lm -lpthread -lfftw3 -lfftw3_threads -lX11 -lXext -lGL -lGLU -lglut
 OPT = -O4
 DEBUG = -g -DDEBUG
 #FLAGS = -Wall $(DEBUG) 
