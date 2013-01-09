@@ -29,6 +29,9 @@ inline double frand( double a, double b ) {
   return (b-a)*(random()/(RAND_MAX+1.0)) + a;
 }
 
+
+/* Initialize a particle structure, with zero wavefunction */
+
 void particle_init( particle *f, double size, int precx, int precy ) {
   f->nx = precx; 
   f->ny = precy;
@@ -68,9 +71,13 @@ void particle_init( particle *f, double size, int precx, int precy ) {
   f->dt = 0.05;
 }
 
+/* Go from position to momentum representation... */
+ 
 void particle_fourierize( particle *f ) {
   fftw_execute( f->forward );
 }
+
+/* ... and back */
 
 void particle_unfourierize( particle *f ) {
   fftw_execute( f->backward );
@@ -82,6 +89,8 @@ void particle_unfourierize( particle *f ) {
     f->buf[i][1] /= Z;
   }
 }
+
+/* Compute the Fourier transform of the probability density */ 
 
 void prob_fourierize( particle *f ) {
   fftw_execute( f->prob_fw );
