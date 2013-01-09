@@ -21,7 +21,7 @@ The Number keys from 0 to 3 select different potentials.
 Required libraries
 ------------------
 
-This software requires the fftw and gl/glut libraries.
+This software requires the fftw3 and gl/glut libraries.
 
 
 How to build on Linux
