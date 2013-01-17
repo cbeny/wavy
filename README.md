@@ -13,19 +13,21 @@ Usage
 
 If any mouse button is pressed, the particle's position is continuously monitored. This forces its localization, but also randomizes its position and speed to some extent. 
 
-The '+' and '-' keys accelarate or slow down the simulation.
+The '+' and '-' keys accelerate or slow down the simulation.
 
 The Number keys from 0 to 3 select different potentials.
+
+Press q to quit.
 
 
 Required libraries
 ------------------
 
-This software requires the fftw3 and gl/glut libraries.
+This software requires the multithreaded fftw3 library and gl/glut libraries.
 
 
-How to build on Linux
----------------------
+How to build on Mac/Linux
+-------------------------
 
 Type 'make' in the source directory
 

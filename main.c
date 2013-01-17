@@ -23,7 +23,11 @@
 #include <math.h>
 #include <time.h>
 #include <fftw3.h>
+#ifdef MAC
+#include <GLUT/glut.h>
+#else
 #include <GL/glut.h>
+#endif
 #include <sys/time.h>
 
 #include "particle.h"
@@ -132,6 +136,13 @@ void idle_hook() {
 
 void keyboard_hook( unsigned char key, int x, int y ) {
   
+  switch( key ) {
+	case 'q': // quit
+	  printf( "exiting.\n");
+	  exit( 0 );
+	  break;
+  }
+
   // digit keys select a potential
 
   if( (int)key >= 48 && (int)key <= 57 ) {
@@ -153,6 +164,7 @@ void keyboard_hook( unsigned char key, int x, int y ) {
 	wave.pot[n] = 0.0;
 
 	switch( key ) {
+
 	case '0': // free particle
 	  break;
 
