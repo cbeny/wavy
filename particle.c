@@ -193,9 +193,9 @@ void particle_represent( particle *f, unsigned char *pixmap, int disp_pot ) {
       }
 
       //double p = fabs( atan2( real, imag )) / M_PI;  // makes more sense but is slow.. should precalculate
-      int r = val * p * 255.0;
-      int g = val * ( 1 - p ) * 110.0;
-      int b = val * ( 1 - p ) * 255.0;
+      int r = val * p * ( 255.0 + 100 );
+      int g = val * ( 1 - p ) * ( 110.0 + 100 );
+      int b = val * ( 1 - p ) * ( 255.0 + 100 );
       
       pixmap[ 3*n + 0 ] = bound( r, pot, 255 );
       pixmap[ 3*n + 1 ] = bound( g, pot, 255 );
@@ -306,7 +306,8 @@ double variance( particle *f ) {
 
 /* Implements a measurement of position with precision sigma */
 
-void measure_position( particle *f, double sigma, fftw_complex * meas_fft ) {
+icoo measure_position( particle *f, double sigma, 
+    fftw_complex * meas_fft ) {
 
   int i, j, n;
   double s2 = sigma * sigma;
@@ -339,11 +340,11 @@ void measure_position( particle *f, double sigma, fftw_complex * meas_fft ) {
     if( f->prob[n] > max ) max = f->prob[n];
   }
 
-  int i0, j0;
+  icoo outcome;
   for( ;; ) {
-    i0 = f->nx * ( random() / ( RAND_MAX + 1.0 ));
-    j0 = f->ny * ( random() / ( RAND_MAX + 1.0 ));
-    if( frand( 0, max ) < f->prob[ i0 + j0*f->nx ]) break;
+    outcome.x = f->nx * ( random() / ( RAND_MAX + 1.0 ));
+    outcome.y = f->ny * ( random() / ( RAND_MAX + 1.0 ));
+    if( frand( 0, max ) < f->prob[ outcome.x + outcome.y*f->nx ]) break;
   }
 
   // and collapse the wavefunction
@@ -355,8 +356,8 @@ void measure_position( particle *f, double sigma, fftw_complex * meas_fft ) {
       double y = j * f->dy;
       double amp = exp( -( x*x + y*y ) / ( 2 * s2 ));  // FIXME shouldn't it be 4 in instead of 2??
 
-      int i1 = ( i0 + i + f->nx ) % f->nx;
-      int j1 = ( j0 + j + f->ny ) % f->ny;
+      int i1 = ( outcome.x + i + f->nx ) % f->nx;
+      int j1 = ( outcome.y + j + f->ny ) % f->ny;
 
       int n = i1 + j1*f->nx;
       f->buf[n][0] *= amp;
@@ -366,4 +367,6 @@ void measure_position( particle *f, double sigma, fftw_complex * meas_fft ) {
 
   particle_make_probability( f );
   particle_normalize( f );
+
+  return outcome;
 }

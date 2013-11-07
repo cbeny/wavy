@@ -22,6 +22,13 @@
 
 #include <fftw3.h>
 
+typedef struct {
+  int x, y;
+} icoo;
+
+typedef struct {
+  double x, y;
+} coo;
 
 typedef struct {
   int      nx, ny;         // dimensions of the 2d grid
@@ -42,6 +49,8 @@ typedef struct {
   fftw_plan prob_fw, prob_bw;
 
   double time_unit, max_dt;
+  
+  coo pos, vel;            // expected position and velocity
 } particle;
 
 
@@ -57,6 +66,6 @@ void particle_represent( particle *f, unsigned char *pixmap, int disp_pot );
 void move_potential( particle *f );
 void move_kinetic( particle *f );
 double variance( particle *f );
-void measure_position( particle *f, double sigma, fftw_complex * meas_fft );
+icoo measure_position( particle *f, double sigma, fftw_complex * meas_fft );
 
 #endif

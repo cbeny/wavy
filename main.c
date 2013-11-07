@@ -49,6 +49,12 @@ int disp_pot;
 struct timeval disp_pot_time;
 
 
+/* save measurement history */ 
+int hist_max;
+int hist_size, hist_ptr;
+icoo *history;
+const int disp_history = 0; // turns out, it's hopelessly noisy
+
 /* Displays the wavefunction in the current glut window */
 
 void display_hook() { 
@@ -59,7 +65,6 @@ void display_hook() {
   // display the particle's pixmap
   glTexImage2D( GL_TEXTURE_2D, 0, GL_RGB, wave.nx, wave.ny, 0, GL_RGB, GL_UNSIGNED_BYTE, pixmap ); 
 
-  glBindTexture( GL_TEXTURE_2D, texobj );
   glBegin( GL_QUADS );
   glTexCoord2f( 0.0, 0.0 );
   glVertex2f( -1.0, -1.0 );
@@ -71,6 +76,43 @@ void display_hook() {
   glVertex2f( -1.0, 1.0 );
   glEnd();
 
+  /*  (Evaluation of wave.vel and wave.pos not implemented yet)
+  // display the classical trajectory prediction (and postdiction)  
+  if( observe ) {
+    int i;  
+
+    // then simulate and display classical trajectory
+    glDisable( GL_TEXTURE_2D );
+    glColor3f( 1.0, 1.0, 1.0);
+    glBegin( GL_LINE_STRIP );
+    double x = wave.pos.x, y = wave.pos.y;
+    for( i = hist_ptr - hist_size; i < hist_ptr; i ++ ) {
+      x += wave.vel.x * wave.dt;
+      y += wave.vel.y * wave.dt;
+      glVertex2f( 2.0 * x/wave.lx - 1,  2.0 * y/wave.ly - 1 );
+    }
+    glEnd();
+    glEnable( GL_TEXTURE_2D );
+  }
+  */
+
+  // display the measurement history 
+  if( observe && disp_history ) {
+    int i;  
+
+    double rx = 2.0 / wave.nx;
+    double ry = 2.0 / wave.ny;
+
+    glDisable( GL_TEXTURE_2D );
+    glColor3f( 1.0, 1.0, 1.0);
+    glBegin( GL_LINE_STRIP );
+    for( i = hist_ptr - hist_size; i < hist_ptr; i ++ ) {
+      glVertex2f(  history[ i % hist_max].x * rx - 1.0, history[ i % hist_max].y * ry- 1.0 );
+    }
+    glEnd();
+    glEnable( GL_TEXTURE_2D );
+  }
+
   glFlush();
   glutSwapBuffers();
 }
@@ -81,7 +123,11 @@ void display_hook() {
 void mouse_hook( int button, int state, int x, int y ) 
 {
   if( state == GLUT_DOWN ) observe = 1;
-  if( state == GLUT_UP ) observe = 0; 
+  if( state == GLUT_UP && observe == 1 ) {
+    observe = 0;
+    hist_size = 0;
+    hist_ptr = 0;
+  } 
 }
 
 void update_time_step() {
@@ -110,9 +156,12 @@ void idle_hook() {
   // match simulation time step to real time elapsed since last update
   update_time_step();
 
-  // observe the particle 
+  // observe the particle and record the last observed coordinates 
   if( observe ) {
-    measure_position( &wave, meas_sigma, meas_fft );
+    icoo pos = measure_position( &wave, meas_sigma, meas_fft );
+    history[hist_ptr % hist_max] = pos;
+    hist_ptr ++;
+    if( hist_size < hist_max ) hist_size ++;
   }
 
   // implement potential step
@@ -137,10 +186,20 @@ void idle_hook() {
 void keyboard_hook( unsigned char key, int x, int y ) {
   
   switch( key ) {
-	case 'q': // quit
-	  printf( "exiting.\n");
-	  exit( 0 );
-	  break;
+    case 'q': // quit
+      printf( "exiting.\n");
+      exit( 0 );
+      break;
+
+    case 'm':
+      if( observe == 0 ) {
+        observe = 1;
+      } else {
+        observe = 0;
+        hist_size = 0;
+        hist_ptr = 0;
+      } 
+      break;
   }
 
   // digit keys select a potential
@@ -243,9 +302,13 @@ int main( int argcp, char **argv ) {
   wave.time_unit = 3.0; // set the simulation time spent per real second
   wave.max_dt = 0.2;    // time step beyond which we give up real time
 
-  // the wavefunction is not being observed initially
+  // initialize wavefunction measurement status and history 
 
-  observe = 0;
+  observe = 0; // it is not being observed initially
+  hist_ptr = 0;
+  hist_size = 0;
+  hist_max = 10;
+  history = malloc( sizeof( icoo ) * hist_max );
 
   // create the initial potential
 
@@ -297,6 +360,7 @@ int main( int argcp, char **argv ) {
   glutIdleFunc( idle_hook );
   glutMouseFunc( mouse_hook );
   glutKeyboardFunc( keyboard_hook );
+  glDisable(GL_LIGHTING);
 
   // Allocate the 2D image
 
