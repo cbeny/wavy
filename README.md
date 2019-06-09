@@ -3,7 +3,7 @@ Wavy
 
 Real-time simulation of a two-dimensional quantum particle using the split-step method. 
 
-<img src="http://dl.dropbox.com/u/10480705/wavy_screenshot1.jpg">
+<img src="http://www.qimlr.org/assets/waves.jpg">
 
 The color is brighter where the particle is more likely to be found. The color hue encodes the phase information. 
 
