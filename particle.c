@@ -173,29 +173,33 @@ void particle_represent( particle *f, unsigned char *pixmap, int disp_pot ) {
   
   particle_make_probability( f );
 
-  double max = f->max * 0.8;
-  double smax = sqrt( max );
+  float max = f->max * 0.8;
+  float smax = sqrtf( max );
 
+  // we should do these calculations in a shader...
   int i, j;
   for( j = 0; j < f->ny; j++ ) {
     for( i = 0; i < f->nx; i++ ) {
       int n = i + j * f->nx;
 
-      double real = f->buf[n][0] / smax;
-      //double imag = f->buf[n][1] / smax;
-      double val = f->prob[n] / max;
+      float real = f->buf[n][0] / smax;
+      float imag = f->buf[n][1] / smax;
+      float val = f->prob[n] / max;
       
-      double p = ( real + 1 ) / 2;
 
       int pot = 0;
       if( disp_pot ) {
-	pot = ( sinf( f->pot[n] / 3.0 ) + 1.0 ) * 7;
+        pot = ( sinf( f->pot[n] / 3.0 ) + 1.0 ) * 7;
       }
 
-      //double p = fabs( atan2( real, imag )) / M_PI;  // makes more sense but is slow.. should precalculate
-      int r = val * p * ( 255.0 + 100 );
-      int g = val * ( 1 - p ) * ( 110.0 + 100 );
-      int b = val * ( 1 - p ) * ( 255.0 + 100 );
+      //float p = ( real + 1 ) / 2;   // faster
+      float p = fabsf( atan2f( real, imag )) / (M_PI);  
+      int r = sqrtf(val * p * 1.0) * 255.0;
+      int g = sqrtf(val * ( 1 - p ) * 0.3) * 255.0;
+      int b = sqrtf(val * ( 1 - p ) * 1.0) * 255.0;
+      //int r = val * sqrtf(cosf(p)) * ( 255.0 + 100 );
+      //int g = val * sqrtf(1-cosf(p)) * ( 110.0 + 100 );
+      //int b = val * sqrtf(1-cosf(p)) * ( 255.0 + 0 );
       
       pixmap[ 3*n + 0 ] = bound( r, pot, 255 );
       pixmap[ 3*n + 1 ] = bound( g, pot, 255 );
@@ -203,7 +207,6 @@ void particle_represent( particle *f, unsigned char *pixmap, int disp_pot ) {
     }
   }
 }
-
 
 /* Evolves the wavefunction in position representation for a short time 
    with only the potential term of the Hamiltonian. */
