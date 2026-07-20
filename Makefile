@@ -11,10 +11,10 @@ endif
 
 
 wavy: particle.o main.o 
-	gcc -o wavy particle.o main.o $(LIBS)
+	gcc -o wavy particle.o main.o $(LIBS) -L/opt/homebrew/Cellar/fftw/3.3.11/lib
 
 %.o: %.c
-	gcc $(FLAGS) -o $(@) -c $*.c 
+	gcc $(FLAGS) -o $(@) -c $*.c -I/opt/homebrew/Cellar/fftw/3.3.11/include/ 
 
 clean :
 	rm -f *.o core wavy 
